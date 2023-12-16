@@ -97,7 +97,7 @@ initialize () {
 
     # Look in common places for the php.ini relevant to zoneminder
     # Search order matters here because debian distros commonly have multiple php.ini's
-    for FILE in "/etc/php/7.4/apache2/php.ini" "/etc/php/7.2/apache2/php.ini" "/etc/php/7.0/apache2/php.ini" "/etc/php5/apache2/php.ini" "/etc/php.ini" "/usr/local/etc/php.ini"; do
+    for FILE in "/etc/php/8.1/apache2/php.ini" "/etc/php/7.4/apache2/php.ini" "/etc/php/7.2/apache2/php.ini" "/etc/php/7.0/apache2/php.ini" "/etc/php5/apache2/php.ini" "/etc/php.ini" "/usr/local/etc/php.ini"; do
         if [ -f $FILE ]; then
             PHPINI=$FILE
             break
@@ -405,6 +405,7 @@ else
 
     mysql -u root -e "CREATE USER 'zmuser'@'localhost' IDENTIFIED BY 'zmpass';"
     mysql -u root -e "GRANT ALL PRIVILEGES ON *.* TO 'zmuser'@'localhost';"
+    mysql -u root -e "ALTER USER 'zmuser'@'localhost' IDENTIFIED WITH mysql_native_password BY 'zmpass';"
 
     if [ "$(zm_db_exists)" -eq "0" ]; then
         echo " * First run of mysql in the container, creating ZoneMinder dB."
@@ -412,6 +413,8 @@ else
     else
         echo " * ZoneMinder dB already exists, skipping table creation."
     fi
+    
+    sed -i -e "s/ZM_DB_HOST=.*$/ZM_DB_HOST=127.0.0.1/g" $ZMCONF
 fi
 
 # Ensure we shutdown our services cleanly when we are told to stop
